@@ -315,6 +315,45 @@ h1 {
 .progress-line { background: #e0e5e0; height: 3px; position: sticky; top: 78px; z-index: 21; }
 .progress-line span { background: var(--green); display: block; height: 100%; transition: width 240ms ease; }
 
+.dialog-backdrop {
+  align-items: center;
+  background: rgba(10, 24, 17, 0.58);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 20px;
+  position: fixed;
+  z-index: 100;
+}
+
+.finish-dialog {
+  background: var(--card);
+  border: 1px solid rgba(22, 36, 29, 0.16);
+  border-radius: 20px;
+  box-shadow: 0 28px 90px rgba(7, 31, 18, 0.28);
+  max-width: 470px;
+  padding: 30px;
+  width: 100%;
+}
+
+.dialog-icon {
+  align-items: center;
+  background: var(--green-soft);
+  border-radius: 12px;
+  color: var(--green);
+  display: flex;
+  font-size: 20px;
+  font-weight: 900;
+  height: 44px;
+  justify-content: center;
+  margin-bottom: 20px;
+  width: 44px;
+}
+
+.finish-dialog h2 { font-family: Georgia, serif; font-size: 29px; font-weight: 500; margin: 0 0 12px; }
+.finish-dialog p { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0; }
+.dialog-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 26px; }
+
 .exam-layout {
   display: grid;
   grid-template-columns: 265px minmax(0, 1fr);
@@ -540,6 +579,9 @@ h1 {
   .exam-header-actions { gap: 7px; }
   .exam-timer { min-width: 120px; padding: 7px 9px; }
   .finish-button { padding: 10px; }
+  .finish-dialog { padding: 24px 20px; }
+  .dialog-actions { flex-direction: column-reverse; }
+  .dialog-actions button { width: 100%; }
   .progress-line { top: 68px; }
   .question-workspace { padding: 28px 17px 60px; }
   .question-panel h1 { font-size: 25px; }

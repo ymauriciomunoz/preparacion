@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { questionBank, stimuliById } from "@/data/question-bank";
 import { EXAM_DURATION_SECONDS, formatClock, getScore } from "@/lib/exam-utils";
 import type { ExamMode, PersistedExam } from "@/types/exam";
@@ -25,6 +25,8 @@ export function ExamApp() {
   const [session, setSession] = useState<PersistedExam | null>(null);
   const [savedSession, setSavedSession] = useState<PersistedExam | null>(null);
   const [finished, setFinished] = useState<FinishedExam | null>(null);
+  const [showFinishDialog, setShowFinishDialog] = useState(false);
+  const continueButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     try {
@@ -46,6 +48,16 @@ export function ExamApp() {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
     }
   }, [screen, session]);
+
+  useEffect(() => {
+    if (!showFinishDialog) return;
+    continueButtonRef.current?.focus();
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setShowFinishDialog(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [showFinishDialog]);
 
   const beginExam = () => {
     const nextSession: PersistedExam = {
@@ -76,14 +88,14 @@ export function ExamApp() {
     setSavedSession(null);
   };
 
-  const finishExam = useCallback((askForConfirmation = false) => {
+  const finishExam = useCallback(() => {
     if (!session) return;
-    if (askForConfirmation && !window.confirm("¿Quieres finalizar el simulacro y ver tus resultados?")) return;
 
     const elapsedSeconds = Math.max(0, Math.floor((Date.now() - session.startedAt) / 1000));
     setFinished({ mode: session.mode, answers: session.answers, elapsedSeconds });
     window.localStorage.removeItem(STORAGE_KEY);
     setSavedSession(null);
+    setShowFinishDialog(false);
     setScreen("results");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [session]);
@@ -132,8 +144,8 @@ export function ExamApp() {
           <div className="exam-brand"><span className="brand-mark">U</span><span>Entrena UdeA<small>Simulacro de admisión</small></span></div>
           <div className="exam-header-actions">
             <span className={`mode-badge ${session.mode}`}>{session.mode === "flexible" ? "Entrenamiento flexible" : "Tiempo estricto"}</span>
-            <ExamTimer mode={session.mode} startedAt={session.startedAt} onStrictExpired={() => finishExam(false)} />
-            <button className="finish-button" type="button" onClick={() => finishExam(true)}>Finalizar</button>
+            <ExamTimer mode={session.mode} startedAt={session.startedAt} onStrictExpired={finishExam} />
+            <button className="finish-button" type="button" onClick={() => setShowFinishDialog(true)}>Finalizar</button>
           </div>
         </header>
 
@@ -208,11 +220,37 @@ export function ExamApp() {
                 <button type="button" className="secondary-button" onClick={() => goTo(session.currentIndex - 1)} disabled={session.currentIndex === 0}>← Anterior</button>
                 {session.currentIndex < questionBank.length - 1
                   ? <button type="button" className="primary-button" onClick={() => goTo(session.currentIndex + 1)}>Siguiente →</button>
-                  : <button type="button" className="primary-button" onClick={() => finishExam(true)}>Ver resultados →</button>}
+                  : <button type="button" className="primary-button" onClick={() => setShowFinishDialog(true)}>Ver resultados →</button>}
               </footer>
             </article>
           </section>
         </div>
+
+        {showFinishDialog && (
+          <div className="dialog-backdrop" role="presentation">
+            <section
+              className="finish-dialog"
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="finish-dialog-title"
+              aria-describedby="finish-dialog-description"
+            >
+              <span className="dialog-icon" aria-hidden="true">✓</span>
+              <h2 id="finish-dialog-title">¿Finalizar el simulacro?</h2>
+              <p id="finish-dialog-description">
+                Has respondido {answeredCount} de {questionBank.length} preguntas. Al finalizar podrás revisar tus resultados y explicaciones.
+              </p>
+              <div className="dialog-actions">
+                <button ref={continueButtonRef} className="secondary-button" type="button" onClick={() => setShowFinishDialog(false)}>
+                  Continuar examen
+                </button>
+                <button className="primary-button" type="button" onClick={finishExam}>
+                  Finalizar y ver resultados
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
       </main>
     );
   }
