@@ -1,20 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { questionBank, stimuliById } from "@/data/question-bank";
+import { createExamQuestionSet, questionsById, stimuliById } from "@/data/question-bank";
 import { EXAM_DURATION_SECONDS, formatClock, getScore } from "@/lib/exam-utils";
 import type { ExamMode, PersistedExam } from "@/types/exam";
 import { ExamTimer } from "./ExamTimer";
 import { QuestionVisual } from "./QuestionVisual";
 
 const STORAGE_KEY = "entrena-udea-exam-v1";
-const SESSION_VERSION = 1;
+const SESSION_VERSION = 2;
 const optionLetters = ["A", "B", "C", "D"];
 
 type Screen = "home" | "exam" | "results";
 
 interface FinishedExam {
   mode: ExamMode;
+  questionIds: string[];
   answers: Record<string, number>;
   elapsedSeconds: number;
 }
@@ -33,10 +34,20 @@ export function ExamApp() {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       const stored = JSON.parse(raw) as PersistedExam;
-      if (stored.version === SESSION_VERSION && stored.currentIndex < questionBank.length) {
+      const hasValidQuestionSet = Array.isArray(stored.questionIds)
+        && stored.questionIds.length === 80
+        && new Set(stored.questionIds).size === 80
+        && stored.questionIds.every((id) => typeof id === "string" && questionsById[id]);
+      if (
+        stored.version === SESSION_VERSION
+        && hasValidQuestionSet
+        && stored.currentIndex >= 0
+        && stored.currentIndex < stored.questionIds.length
+      ) {
         const frame = window.requestAnimationFrame(() => setSavedSession(stored));
         return () => window.cancelAnimationFrame(frame);
       }
+      window.localStorage.removeItem(STORAGE_KEY);
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
     }
@@ -60,11 +71,13 @@ export function ExamApp() {
   }, [showFinishDialog]);
 
   const beginExam = () => {
+    const examQuestions = createExamQuestionSet();
     const nextSession: PersistedExam = {
       version: SESSION_VERSION,
       mode: selectedMode,
       startedAt: Date.now(),
       currentIndex: 0,
+      questionIds: examQuestions.map((question) => question.id),
       answers: {},
       marked: [],
     };
@@ -92,7 +105,7 @@ export function ExamApp() {
     if (!session) return;
 
     const elapsedSeconds = Math.max(0, Math.floor((Date.now() - session.startedAt) / 1000));
-    setFinished({ mode: session.mode, answers: session.answers, elapsedSeconds });
+    setFinished({ mode: session.mode, questionIds: session.questionIds, answers: session.answers, elapsedSeconds });
     window.localStorage.removeItem(STORAGE_KEY);
     setSavedSession(null);
     setShowFinishDialog(false);
@@ -108,13 +121,14 @@ export function ExamApp() {
   };
 
   if (screen === "exam" && session) {
-    const currentQuestion = questionBank[session.currentIndex];
+    const examQuestions = session.questionIds.map((id) => questionsById[id]);
+    const currentQuestion = examQuestions[session.currentIndex];
     const stimulus = currentQuestion.stimulusId ? stimuliById[currentQuestion.stimulusId] : undefined;
     const answeredCount = Object.keys(session.answers).length;
     const isMarked = session.marked.includes(currentQuestion.id);
 
     const goTo = (index: number) => {
-      setSession((current) => current ? { ...current, currentIndex: Math.min(Math.max(index, 0), questionBank.length - 1) } : current);
+      setSession((current) => current ? { ...current, currentIndex: Math.min(Math.max(index, 0), examQuestions.length - 1) } : current);
       window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
@@ -149,25 +163,25 @@ export function ExamApp() {
           </div>
         </header>
 
-        <div className="progress-line" aria-label={`${answeredCount} de ${questionBank.length} preguntas respondidas`}>
-          <span style={{ width: `${(answeredCount / questionBank.length) * 100}%` }} />
+        <div className="progress-line" aria-label={`${answeredCount} de ${examQuestions.length} preguntas respondidas`}>
+          <span style={{ width: `${(answeredCount / examQuestions.length) * 100}%` }} />
         </div>
 
         <div className="exam-layout">
           <aside className="question-navigator" aria-label="Navegador de preguntas">
             <div className="navigator-heading">
-              <div><span>Tu avance</span><strong>{answeredCount}/{questionBank.length}</strong></div>
+              <div><span>Tu avance</span><strong>{answeredCount}/{examQuestions.length}</strong></div>
               <small>{session.marked.length} marcadas para revisar</small>
             </div>
             <div className="navigator-section-label">Razonamiento lógico</div>
             <div className="question-grid">
-              {questionBank.slice(0, 40).map((question, index) => (
+              {examQuestions.slice(0, 40).map((question, index) => (
                 <QuestionNumber key={question.id} questionId={question.id} index={index} session={session} onClick={goTo} />
               ))}
             </div>
             <div className="navigator-section-label">Comprensión lectora</div>
             <div className="question-grid">
-              {questionBank.slice(40).map((question, offset) => {
+              {examQuestions.slice(40).map((question, offset) => {
                 const index = offset + 40;
                 return <QuestionNumber key={question.id} questionId={question.id} index={index} session={session} onClick={goTo} />;
               })}
@@ -193,7 +207,7 @@ export function ExamApp() {
                 <span>{currentQuestion.difficulty}</span>
               </div>
               <div className="question-number-row">
-                <span>Pregunta {session.currentIndex + 1} de {questionBank.length}</span>
+                <span>Pregunta {session.currentIndex + 1} de {examQuestions.length}</span>
                 <button className={`mark-button ${isMarked ? "active" : ""}`} type="button" onClick={toggleMarked} aria-pressed={isMarked}>
                   <span aria-hidden="true">{isMarked ? "★" : "☆"}</span> {isMarked ? "Marcada" : "Marcar para revisar"}
                 </button>
@@ -218,7 +232,7 @@ export function ExamApp() {
 
               <footer className="question-actions">
                 <button type="button" className="secondary-button" onClick={() => goTo(session.currentIndex - 1)} disabled={session.currentIndex === 0}>← Anterior</button>
-                {session.currentIndex < questionBank.length - 1
+                {session.currentIndex < examQuestions.length - 1
                   ? <button type="button" className="primary-button" onClick={() => goTo(session.currentIndex + 1)}>Siguiente →</button>
                   : <button type="button" className="primary-button" onClick={() => setShowFinishDialog(true)}>Ver resultados →</button>}
               </footer>
@@ -238,7 +252,7 @@ export function ExamApp() {
               <span className="dialog-icon" aria-hidden="true">✓</span>
               <h2 id="finish-dialog-title">¿Finalizar el simulacro?</h2>
               <p id="finish-dialog-description">
-                Has respondido {answeredCount} de {questionBank.length} preguntas. Al finalizar podrás revisar tus resultados y explicaciones.
+                Has respondido {answeredCount} de {examQuestions.length} preguntas. Al finalizar podrás revisar tus resultados y explicaciones.
               </p>
               <div className="dialog-actions">
                 <button ref={continueButtonRef} className="secondary-button" type="button" onClick={() => setShowFinishDialog(false)}>
@@ -279,7 +293,7 @@ export function ExamApp() {
             <div><strong>2</strong><span>competencias</span></div>
           </div>
           <div className="practice-notes">
-            <span>✓ Preguntas originales tipo UdeA</span>
+            <span>✓ Banco de 160 preguntas originales</span>
             <span>✓ Gráficas y ejercicios visuales</span>
             <span>✓ Explicaciones al finalizar</span>
           </div>
@@ -288,7 +302,7 @@ export function ExamApp() {
         <aside className="mode-card" aria-labelledby="mode-title">
           {savedSession && (
             <div className="resume-card">
-              <div><strong>Tienes un simulacro en curso</strong><span>{Object.keys(savedSession.answers).length} de {questionBank.length} respondidas</span></div>
+              <div><strong>Tienes un simulacro en curso</strong><span>{Object.keys(savedSession.answers).length} de {savedSession.questionIds.length} respondidas</span></div>
               <button type="button" onClick={resumeExam}>Continuar</button>
               <button type="button" className="discard-button" onClick={discardSaved} aria-label="Descartar simulacro guardado">×</button>
             </div>
@@ -337,9 +351,13 @@ function QuestionNumber({ questionId, index, session, onClick }: { questionId: s
 }
 
 function Results({ finished, onRestart }: { finished: FinishedExam; onRestart: () => void }) {
-  const score = useMemo(() => getScore(questionBank, finished.answers), [finished.answers]);
+  const examQuestions = useMemo(
+    () => finished.questionIds.map((id) => questionsById[id]),
+    [finished.questionIds],
+  );
+  const score = useMemo(() => getScore(examQuestions, finished.answers), [examQuestions, finished.answers]);
   const overtime = Math.max(0, finished.elapsedSeconds - EXAM_DURATION_SECONDS);
-  const incorrect = questionBank.filter((question) => finished.answers[question.id] !== question.correctOption);
+  const incorrect = examQuestions.filter((question) => finished.answers[question.id] !== question.correctOption);
   const logical = score.byCompetency["Razonamiento lógico"];
   const reading = score.byCompetency["Comprensión lectora"];
 
@@ -369,7 +387,7 @@ function Results({ finished, onRestart }: { finished: FinishedExam; onRestart: (
         <div className="review-list">
           {incorrect.map((question, index) => (
             <details key={question.id} open={index === 0}>
-              <summary><span>{questionBank.indexOf(question) + 1}</span><div><strong>{question.stem}</strong><small>{question.competency} · {question.skill}</small></div><i aria-hidden="true">+</i></summary>
+              <summary><span>{examQuestions.indexOf(question) + 1}</span><div><strong>{question.stem}</strong><small>{question.competency} · {question.skill}</small></div><i aria-hidden="true">+</i></summary>
               <div className="review-answer">
                 <p><b>Tu respuesta:</b> {finished.answers[question.id] === undefined ? "Sin responder" : `${optionLetters[finished.answers[question.id]]}. ${question.options[finished.answers[question.id]]}`}</p>
                 <p className="correct-answer"><b>Respuesta correcta:</b> {optionLetters[question.correctOption]}. {question.options[question.correctOption]}</p>

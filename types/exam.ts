@@ -40,6 +40,7 @@ export interface PersistedExam {
   mode: ExamMode;
   startedAt: number;
   currentIndex: number;
+  questionIds: string[];
   answers: Record<string, number>;
   marked: string[];
 }

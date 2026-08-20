@@ -1,6 +1,8 @@
 import type { Question, ReadingStimulus } from "@/types/exam";
+import { additionalLogicalQuestions } from "./additional-logical-questions";
+import { additionalReadingQuestions, additionalReadingStimuli } from "./additional-reading-bank";
 
-export const readingStimuli: ReadingStimulus[] = [
+const baseReadingStimuli: ReadingStimulus[] = [
   {
     id: "texto-ciudad-sombra",
     kicker: "Texto 1 · Divulgación urbana",
@@ -111,6 +113,11 @@ export const readingStimuli: ReadingStimulus[] = [
     ],
     source: "Texto original para este simulador.",
   },
+];
+
+export const readingStimuli: ReadingStimulus[] = [
+  ...baseReadingStimuli,
+  ...additionalReadingStimuli,
 ];
 
 const logicalQuestions: Question[] = [
@@ -608,8 +615,42 @@ const readingQuestions: Question[] = [
   },
 ];
 
-export const questionBank: Question[] = [...logicalQuestions, ...readingQuestions];
+export const questionBank: Question[] = [
+  ...logicalQuestions,
+  ...additionalLogicalQuestions,
+  ...readingQuestions,
+  ...additionalReadingQuestions,
+];
+
+export const questionsById = Object.fromEntries(
+  questionBank.map((question) => [question.id, question]),
+) as Record<string, Question>;
 
 export const stimuliById = Object.fromEntries(
   readingStimuli.map((stimulus) => [stimulus.id, stimulus]),
 ) as Record<string, ReadingStimulus>;
+
+function shuffled<T>(items: T[]): T[] {
+  const result = [...items];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [result[index], result[randomIndex]] = [result[randomIndex], result[index]];
+  }
+  return result;
+}
+
+export function createExamQuestionSet(): Question[] {
+  const selectedLogical = shuffled(
+    questionBank.filter((question) => question.competency === "Razonamiento lógico"),
+  ).slice(0, 40);
+
+  const selectedStimulusIds = shuffled(readingStimuli)
+    .slice(0, 10)
+    .map((stimulus) => stimulus.id);
+
+  const selectedReading = selectedStimulusIds.flatMap((stimulusId) =>
+    questionBank.filter((question) => question.stimulusId === stimulusId),
+  );
+
+  return [...selectedLogical, ...selectedReading];
+}

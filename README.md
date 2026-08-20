@@ -1,6 +1,6 @@
 # Entrena UdeA
 
-Simulador web para practicar la prueba de admisión de la Universidad de Antioquia. Incluye 40 preguntas de razonamiento lógico, 40 de comprensión lectora, recursos gráficos, guardado local y dos modalidades de tiempo.
+Simulador web para practicar la prueba de admisión de la Universidad de Antioquia. Cada intento incluye 40 preguntas de razonamiento lógico y 40 de comprensión lectora, seleccionadas de un banco de 160 preguntas, además de recursos gráficos, guardado local y dos modalidades de tiempo.
 
 ## Modalidades
 
@@ -15,7 +15,7 @@ Simulador web para practicar la prueba de admisión de la Universidad de Antioqu
 - `lib/`: cálculos de tiempo y resultados.
 - `types/`: contratos de preguntas, gráficos y sesiones.
 
-El banco está desacoplado de la interfaz. Para agregar contenido, se incorporan nuevos registros en `data/question-bank.ts` respetando los tipos definidos en `types/exam.ts`.
+El banco está desacoplado de la interfaz y dividido por bloques dentro de `data/`. Para agregar contenido, se incorporan preguntas y estímulos respetando los tipos definidos en `types/exam.ts`. La selección conserva juntas las cuatro preguntas de cada lectura.
 
 ## Desarrollo
 
