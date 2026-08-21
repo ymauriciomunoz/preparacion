@@ -15,5 +15,5 @@ export function CourseV2Page() {
   }, []);
   return request
     ? <CourseV2Experience initialTrack={request.track} entryMode={request.mode} />
-    : <main className="course-v2-loading">Preparando Curso v2…</main>;
+    : <main className="course-v2-loading">Preparando el curso…</main>;
 }

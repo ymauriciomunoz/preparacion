@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { access, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import path from "node:path";
 import { createServer } from "vite";
 import type { CourseModuleV2 } from "../types/course-v2.ts";
 
@@ -13,9 +15,6 @@ const moduleLoader = await createServer({
 });
 const { courseModulesV2 } = await moduleLoader.ssrLoadModule("/data/course-v2/index.ts") as {
   courseModulesV2: CourseModuleV2[];
-};
-const { COURSE_PROGRESS_KEY } = await moduleLoader.ssrLoadModule("/lib/course-progress.ts") as {
-  COURSE_PROGRESS_KEY: string;
 };
 const { COURSE_V2_PROGRESS_KEY, createCourseV2OptionOrders, createInitialCourseV2Progress, hasStoredCourseV2Progress, loadCourseV2EntryProgress } = await moduleLoader.ssrLoadModule("/lib/course-v2-progress.ts") as {
   COURSE_V2_PROGRESS_KEY: string;
@@ -111,8 +110,18 @@ test("cada módulo v2 declara un checkpoint válido", () => {
   });
 });
 
-test("v1 y v2 guardan su progreso en claves distintas", () => {
-  assert.notEqual(COURSE_V2_PROGRESS_KEY, COURSE_PROGRESS_KEY);
+test("el sitio expone una sola ruta activa del curso", async () => {
+  const activeRoute = await readFile(path.join(projectRoot, "app", "curso", "page.tsx"), "utf8");
+  assert.match(activeRoute, /CourseV2Page/u);
+  await assert.rejects(access(path.join(projectRoot, "app", "curso", "v2", "page.tsx")));
+
+  const navigators = await Promise.all([
+    readFile(path.join(projectRoot, "components", "ExamApp.tsx"), "utf8"),
+    readFile(path.join(projectRoot, "components", "PaymentPage.tsx"), "utf8"),
+    readFile(path.join(projectRoot, "components", "course-v2", "CourseV2Experience.tsx"), "utf8"),
+  ]);
+  assert.ok(navigators.every((source) => !source.includes("/curso/v2")));
+  assert.ok(navigators.every((source) => !source.includes("Abrir versión")));
 });
 
 test("mode=start respeta la competencia elegida sin borrar el progreso existente", () => {

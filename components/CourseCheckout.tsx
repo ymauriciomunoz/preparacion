@@ -44,14 +44,14 @@ export function CourseCheckout({
       <header className="course-topbar">
         <button className="course-brand" type="button" onClick={onBack} aria-label="Volver a los resultados">
           <span className="brand-mark">U</span>
-          <span>Entrena UdeA<small>Curso de habilidades · v2</small></span>
+          <span>Entrena UdeA<small>Curso de habilidades</small></span>
         </button>
         <button className="secondary-button" type="button" onClick={onBack}>← Volver a resultados</button>
       </header>
 
       <section className="checkout-layout">
         <div className="checkout-copy">
-          <span className="eyebrow">Curso v2 · Vista educativa</span>
+          <span className="eyebrow">Curso de habilidades · Vista educativa</span>
           <h1>Convierte tu resultado en una ruta de mejora.</h1>
           <p>Explora una ruta profunda para principiantes: conceptos explicados desde cero, ejemplos resueltos, práctica guiada, trabajo independiente y comprobaciones tipo UdeA.</p>
 

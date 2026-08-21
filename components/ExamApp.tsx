@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createExamQuestionSet, questionsById, stimuliById } from "@/data/question-bank";
-import { loadCourseProgress } from "@/lib/course-progress";
 import { hasStoredCourseV2Progress } from "@/lib/course-v2-progress";
 import { EXAM_DURATION_SECONDS, formatClock, getScore } from "@/lib/exam-utils";
 import { createBalancedOptionOrders, displayedOptionIndex, isValidOptionOrder } from "@/lib/option-orders";
@@ -34,7 +33,7 @@ export function ExamApp() {
   const [savedSession, setSavedSession] = useState<PersistedExam | null>(null);
   const [finished, setFinished] = useState<FinishedExam | null>(null);
   const [courseTrack, setCourseTrack] = useState<CourseTrack | null>(null);
-  const [savedCourseEdition, setSavedCourseEdition] = useState<1 | 2 | null>(null);
+  const [hasSavedCourseProgress, setHasSavedCourseProgress] = useState(false);
   const [navigatorTrack, setNavigatorTrack] = useState<CourseTrack>("math");
   const [showFinishDialog, setShowFinishDialog] = useState(false);
   const continueButtonRef = useRef<HTMLButtonElement>(null);
@@ -52,11 +51,10 @@ export function ExamApp() {
   }, []);
 
   useEffect(() => {
-    const v1ProgressExists = Boolean(loadCourseProgress(window.localStorage));
-    let v2ProgressExists = false;
+    let courseProgressExists = false;
     let storedSession: PersistedExam | null = null;
     try {
-      v2ProgressExists = hasStoredCourseV2Progress(window.localStorage);
+      courseProgressExists = hasStoredCourseV2Progress(window.localStorage);
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const stored = JSON.parse(raw) as unknown;
@@ -76,7 +74,7 @@ export function ExamApp() {
       }
     }
     const frame = window.requestAnimationFrame(() => {
-      setSavedCourseEdition(v2ProgressExists ? 2 : v1ProgressExists ? 1 : null);
+      setHasSavedCourseProgress(courseProgressExists);
       setSavedSession(storedSession);
     });
     return () => window.cancelAnimationFrame(frame);
@@ -358,7 +356,7 @@ export function ExamApp() {
         recommendedTrack={courseTrack}
         onBack={() => setScreen("results")}
         onContinue={(mode, track) => {
-          window.location.assign(`/curso/v2?mode=${mode}&track=${track}`);
+          window.location.assign(`/curso?mode=${mode}&track=${track}`);
         }}
       />
     );
@@ -394,10 +392,10 @@ export function ExamApp() {
         </div>
 
         <aside className="mode-card" aria-labelledby="mode-title">
-          {savedCourseEdition && (
+          {hasSavedCourseProgress && (
             <div className="continue-course-card">
-              <div><strong>Tu Curso v{savedCourseEdition} está listo para continuar</strong><span>Retoma la competencia y el módulo que dejaste abiertos.</span></div>
-              <a href={savedCourseEdition === 2 ? "/curso/v2?mode=resume" : "/curso?mode=resume"}>Continuar Curso v{savedCourseEdition}</a>
+              <div><strong>Tu curso está listo para continuar</strong><span>Retoma la competencia y el módulo que dejaste abiertos.</span></div>
+              <a href="/curso?mode=resume">Continuar curso</a>
             </div>
           )}
           {savedSession && (

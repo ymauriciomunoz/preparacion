@@ -39,7 +39,7 @@ export function createCourseV2OptionOrders(): OptionOrders {
 
 export function createInitialCourseV2Progress(track: CourseTrack = "math"): CourseV2Progress {
   const firstModule = courseModulesV2.find((module) => module.track === track) ?? courseModulesV2[0];
-  if (!firstModule) throw new Error("Curso v2 no tiene módulos configurados");
+  if (!firstModule) throw new Error("El curso no tiene módulos configurados");
   return {
     courseEdition: 2,
     schemaVersion: COURSE_V2_SCHEMA_VERSION,

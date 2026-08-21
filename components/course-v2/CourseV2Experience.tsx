@@ -50,7 +50,7 @@ export function CourseV2Experience({ initialTrack = "math", entryMode = "resume"
     [progress.track],
   );
   const activeModule = courseModulesV2.find((module) => module.id === progress.activeModuleId) ?? trackModules[0] ?? courseModulesV2[0];
-  if (!activeModule) return <main className="course-v2-loading">Preparando Curso v2…</main>;
+  if (!activeModule) return <main className="course-v2-loading">Preparando el curso…</main>;
 
   const stageIndex = stages.findIndex((stage) => stage.id === progress.activeStage);
   const answered = activeModule.exercises.filter((exercise) => progress.answers[exercise.id] !== undefined);
@@ -121,14 +121,13 @@ export function CourseV2Experience({ initialTrack = "math", entryMode = "resume"
     <main className="course-v2-shell">
       <header className="course-v2-header">
         <Link className="course-brand" href="/" aria-label="Volver al inicio de Entrena UdeA">
-          <span className="brand-mark">U</span><span>Entrena UdeA<small>Curso v2 · Ruta profunda</small></span>
+          <span className="brand-mark">U</span><span>Entrena UdeA<small>Curso de habilidades · Ruta profunda</small></span>
         </Link>
-        <div className="edition-switch"><span>Versión actual: 2</span><Link href="/curso?mode=resume">Abrir versión 1</Link></div>
       </header>
 
       <section className="course-v2-hero">
-        <div><span className="eyebrow">Aprendizaje para empezar desde cero</span><h1>Entiende, practica y luego comprueba.</h1><p>Avanza con la secuencia “yo explico → resolvemos juntos → tú lo intentas”. Tu progreso de v1 permanece intacto.</p></div>
-        <div className="v2-overall-progress"><span>Progreso Curso v2</span><strong>{progress.completedModules.length}/{courseModulesV2.length} módulos</strong><div><i style={{ width: `${(progress.completedModules.length / courseModulesV2.length) * 100}%` }} /></div></div>
+        <div><span className="eyebrow">Aprendizaje para empezar desde cero</span><h1>Entiende, practica y luego comprueba.</h1><p>Avanza con la secuencia “yo explico → resolvemos juntos → tú lo intentas” y retoma tu progreso cuando quieras.</p></div>
+        <div className="v2-overall-progress"><span>Progreso del curso</span><strong>{progress.completedModules.length}/{courseModulesV2.length} módulos</strong><div><i style={{ width: `${(progress.completedModules.length / courseModulesV2.length) * 100}%` }} /></div></div>
       </section>
 
       <div className="course-v2-track-switch" aria-label="Competencias">
