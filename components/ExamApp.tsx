@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createExamQuestionSet, questionsById, stimuliById } from "@/data/question-bank";
 import { loadCourseProgress } from "@/lib/course-progress";
+import { hasStoredCourseV2Progress } from "@/lib/course-v2-progress";
 import { EXAM_DURATION_SECONDS, formatClock, getScore } from "@/lib/exam-utils";
 import { createBalancedOptionOrders, displayedOptionIndex, isValidOptionOrder } from "@/lib/option-orders";
 import { getCourseRecommendation } from "@/lib/recommendation";
@@ -33,7 +34,7 @@ export function ExamApp() {
   const [savedSession, setSavedSession] = useState<PersistedExam | null>(null);
   const [finished, setFinished] = useState<FinishedExam | null>(null);
   const [courseTrack, setCourseTrack] = useState<CourseTrack | null>(null);
-  const [hasCourseProgress, setHasCourseProgress] = useState(false);
+  const [savedCourseEdition, setSavedCourseEdition] = useState<1 | 2 | null>(null);
   const [navigatorTrack, setNavigatorTrack] = useState<CourseTrack>("math");
   const [showFinishDialog, setShowFinishDialog] = useState(false);
   const continueButtonRef = useRef<HTMLButtonElement>(null);
@@ -51,9 +52,11 @@ export function ExamApp() {
   }, []);
 
   useEffect(() => {
-    const courseProgressExists = Boolean(loadCourseProgress(window.localStorage));
+    const v1ProgressExists = Boolean(loadCourseProgress(window.localStorage));
+    let v2ProgressExists = false;
     let storedSession: PersistedExam | null = null;
     try {
+      v2ProgressExists = hasStoredCourseV2Progress(window.localStorage);
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const stored = JSON.parse(raw) as unknown;
@@ -66,10 +69,14 @@ export function ExamApp() {
         }
       }
     } catch {
-      window.localStorage.removeItem(STORAGE_KEY);
+      try {
+        window.localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // El simulador puede iniciar aunque el almacenamiento local esté bloqueado.
+      }
     }
     const frame = window.requestAnimationFrame(() => {
-      setHasCourseProgress(courseProgressExists);
+      setSavedCourseEdition(v2ProgressExists ? 2 : v1ProgressExists ? 1 : null);
       setSavedSession(storedSession);
     });
     return () => window.cancelAnimationFrame(frame);
@@ -351,7 +358,7 @@ export function ExamApp() {
         recommendedTrack={courseTrack}
         onBack={() => setScreen("results")}
         onContinue={(mode, track) => {
-          window.location.assign(`/curso?mode=${mode}&track=${track}`);
+          window.location.assign(`/curso/v2?mode=${mode}&track=${track}`);
         }}
       />
     );
@@ -387,10 +394,10 @@ export function ExamApp() {
         </div>
 
         <aside className="mode-card" aria-labelledby="mode-title">
-          {hasCourseProgress && (
+          {savedCourseEdition && (
             <div className="continue-course-card">
-              <div><strong>Tu curso está listo para continuar</strong><span>Retoma la competencia y el módulo que dejaste abiertos.</span></div>
-              <a href="/curso?mode=resume">Continuar curso</a>
+              <div><strong>Tu Curso v{savedCourseEdition} está listo para continuar</strong><span>Retoma la competencia y el módulo que dejaste abiertos.</span></div>
+              <a href={savedCourseEdition === 2 ? "/curso/v2?mode=resume" : "/curso?mode=resume"}>Continuar Curso v{savedCourseEdition}</a>
             </div>
           )}
           {savedSession && (

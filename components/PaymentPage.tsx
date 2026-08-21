@@ -7,7 +7,7 @@ export function PaymentPage() {
     <CourseCheckout
       recommendedTrack={null}
       onBack={() => window.location.assign("/")}
-      onContinue={(mode, track) => window.location.assign(`/curso?mode=${mode}&track=${track}`)}
+      onContinue={(mode, track) => window.location.assign(`/curso/v2?mode=${mode}&track=${track}`)}
     />
   );
 }

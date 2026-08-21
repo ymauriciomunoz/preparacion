@@ -10,7 +10,7 @@
     "build": "vinext build",
     "start": "vinext start",
     "test": "npm run test:qa && npm run lint && tsc --noEmit --incremental false && npm run build",
-    "test:qa": "node --experimental-strip-types --test tests/qa-core.test.ts",
+    "test:qa": "node --experimental-strip-types --test tests/qa-core.test.ts tests/course-v2.test.ts",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next"
   },
   "dependencies": {

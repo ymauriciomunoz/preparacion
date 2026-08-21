@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { courseLessons, courseTracks } from "@/data/course-content";
 import {
@@ -103,14 +104,14 @@ export function CourseExperience({
       <header className="course-header">
         <button className="course-brand" type="button" onClick={onExit} aria-label="Salir del curso">
           <span className="brand-mark">U</span>
-          <span>Entrena UdeA<small>Curso de habilidades</small></span>
+          <span>Entrena UdeA<small>Curso de habilidades · v1</small></span>
         </button>
         <div className="course-header-progress">
           <span>Avance de contenido</span>
           <strong>{completed.length}/{courseLessons.length}</strong>
           <div><i style={{ width: `${(completed.length / courseLessons.length) * 100}%` }} /></div>
         </div>
-        <button className="secondary-button" type="button" onClick={onExit}>Salir del curso</button>
+        <div className="course-header-actions"><Link className="topbar-course-link" href="/curso/v2">Abrir versión 2</Link><button className="secondary-button" type="button" onClick={onExit}>Salir del curso</button></div>
       </header>
 
       <div className="course-track-tabs" aria-label="Áreas del curso">
@@ -132,7 +133,7 @@ export function CourseExperience({
         <aside className="lesson-sidebar" aria-label={`Módulos de ${courseTracks[track].label}`}>
           <div className="lesson-sidebar-heading">
             <span>Tu ruta</span>
-            <strong>{completedInTrack} de {lessons.length} módulos acreditados</strong>
+            <strong>{completedInTrack} de {lessons.length} módulos completados</strong>
             <div><i style={{ width: `${(completedInTrack / lessons.length) * 100}%` }} /></div>
           </div>
           <nav>
@@ -224,7 +225,7 @@ export function CourseExperience({
               onClick={toggleComplete}
               disabled={!masteredLesson && !completed.includes(activeLesson.id)}
             >
-              {completed.includes(activeLesson.id) ? "✓ Módulo acreditado" : masteredLesson ? "Acreditar módulo" : "Resuelve correctamente los 2 retos"}
+              {completed.includes(activeLesson.id) ? "✓ Módulo completado" : masteredLesson ? "Completar módulo" : "Resuelve correctamente los 2 retos"}
             </button>
             {currentIndex < lessons.length - 1
               ? <button className="primary-button" type="button" onClick={goNext}>Siguiente módulo →</button>

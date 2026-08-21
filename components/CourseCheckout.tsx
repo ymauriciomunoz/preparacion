@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { loadCourseProgress } from "@/lib/course-progress";
+import { hasStoredCourseV2Progress, loadCourseV2Progress } from "@/lib/course-v2-progress";
 import type { CourseTrack } from "@/types/course";
 
 export function CourseCheckout({
@@ -18,7 +18,14 @@ export function CourseCheckout({
   const [selectedTrack, setSelectedTrack] = useState<CourseTrack>(recommendedTrack ?? "math");
 
   useEffect(() => {
-    const progress = loadCourseProgress(window.localStorage);
+    let progress: ReturnType<typeof loadCourseV2Progress> | null = null;
+    try {
+      progress = hasStoredCourseV2Progress(window.localStorage)
+        ? loadCourseV2Progress(window.localStorage)
+        : null;
+    } catch {
+      // La vista educativa también funciona cuando el navegador bloquea el almacenamiento.
+    }
     const frame = window.requestAnimationFrame(() => {
       setHasSavedProgress(Boolean(progress));
       if (progress) setSavedTrack(progress.track);
@@ -37,20 +44,20 @@ export function CourseCheckout({
       <header className="course-topbar">
         <button className="course-brand" type="button" onClick={onBack} aria-label="Volver a los resultados">
           <span className="brand-mark">U</span>
-          <span>Entrena UdeA<small>Curso de habilidades</small></span>
+          <span>Entrena UdeA<small>Curso de habilidades · v2</small></span>
         </button>
         <button className="secondary-button" type="button" onClick={onBack}>← Volver a resultados</button>
       </header>
 
       <section className="checkout-layout">
         <div className="checkout-copy">
-          <span className="eyebrow">Vista previa educativa</span>
+          <span className="eyebrow">Curso v2 · Vista educativa</span>
           <h1>Convierte tu resultado en una ruta de mejora.</h1>
-          <p>Explora gratis esta demostración de razonamiento lógico y comprensión lectora, con explicaciones breves, ejemplos guiados y práctica interactiva.</p>
+          <p>Explora una ruta profunda para principiantes: conceptos explicados desde cero, ejemplos resueltos, práctica guiada, trabajo independiente y comprobaciones tipo UdeA.</p>
 
           <div className="checkout-benefits">
             <article><span>17</span><div><strong>Módulos guiados</strong><small>8 de razonamiento lógico y 9 de comprensión lectora</small></div></article>
-            <article><span>34</span><div><strong>Retos con respuesta</strong><small>Retroalimentación inmediata en esta vista previa</small></div></article>
+            <article><span>85</span><div><strong>Actividades progresivas</strong><small>Fundamento, aplicación y cierre tipo UdeA</small></div></article>
             <article><span>∞</span><div><strong>Ritmo flexible</strong><small>Avanza y retoma desde este dispositivo</small></div></article>
           </div>
 
