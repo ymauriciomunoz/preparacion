@@ -13,9 +13,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Entrena UdeA | Simulacro de admisión",
+  metadataBase: new URL("https://entrena-udea-medellin.yeisonmauro.chatgpt.site"),
+  title: "Entrena UdeA | Simulacro y curso de habilidades",
   description:
-    "Simulador de razonamiento lógico y comprensión lectora para preparar la prueba de admisión de la Universidad de Antioquia.",
+    "Simulador y curso interactivo de razonamiento lógico y comprensión lectora para preparar la prueba de admisión de la Universidad de Antioquia.",
+  openGraph: {
+    title: "Entrena UdeA",
+    description: "Simulacro + curso de habilidades en razonamiento lógico y comprensión lectora.",
+    type: "website",
+    url: "/",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Entrena UdeA: simulacro y curso de habilidades" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Entrena UdeA",
+    description: "Simulacro + curso de habilidades en razonamiento lógico y comprensión lectora.",
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({

@@ -1,0 +1,100 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { loadCourseProgress } from "@/lib/course-progress";
+import type { CourseTrack } from "@/types/course";
+
+export function CourseCheckout({
+  recommendedTrack,
+  onBack,
+  onContinue,
+}: {
+  recommendedTrack: CourseTrack | null;
+  onBack: () => void;
+  onContinue: (mode: "start" | "resume", track: CourseTrack) => void;
+}) {
+  const [hasSavedProgress, setHasSavedProgress] = useState(false);
+  const [savedTrack, setSavedTrack] = useState<CourseTrack>("math");
+  const [selectedTrack, setSelectedTrack] = useState<CourseTrack>(recommendedTrack ?? "math");
+
+  useEffect(() => {
+    const progress = loadCourseProgress(window.localStorage);
+    const frame = window.requestAnimationFrame(() => {
+      setHasSavedProgress(Boolean(progress));
+      if (progress) setSavedTrack(progress.track);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  const recommendation = recommendedTrack === "math"
+    ? "Razonamiento lógico"
+    : recommendedTrack === "reading"
+      ? "Comprensión lectora"
+      : null;
+
+  return (
+    <main className="checkout-shell">
+      <header className="course-topbar">
+        <button className="course-brand" type="button" onClick={onBack} aria-label="Volver a los resultados">
+          <span className="brand-mark">U</span>
+          <span>Entrena UdeA<small>Curso de habilidades</small></span>
+        </button>
+        <button className="secondary-button" type="button" onClick={onBack}>← Volver a resultados</button>
+      </header>
+
+      <section className="checkout-layout">
+        <div className="checkout-copy">
+          <span className="eyebrow">Vista previa educativa</span>
+          <h1>Convierte tu resultado en una ruta de mejora.</h1>
+          <p>Explora gratis esta demostración de razonamiento lógico y comprensión lectora, con explicaciones breves, ejemplos guiados y práctica interactiva.</p>
+
+          <div className="checkout-benefits">
+            <article><span>17</span><div><strong>Módulos guiados</strong><small>8 de razonamiento lógico y 9 de comprensión lectora</small></div></article>
+            <article><span>34</span><div><strong>Retos con respuesta</strong><small>Retroalimentación inmediata en esta vista previa</small></div></article>
+            <article><span>∞</span><div><strong>Ritmo flexible</strong><small>Avanza y retoma desde este dispositivo</small></div></article>
+          </div>
+
+          <div className="recommendation-note">
+            <span aria-hidden="true">✦</span>
+            <div>
+              <strong>{recommendation ? `Ruta sugerida: ${recommendation}` : "Elige la ruta que quieras fortalecer"}</strong>
+              <p>{recommendation ? "La sugerencia usa suficientes respuestas de este intento. Puedes cambiar de competencia en cualquier momento." : "Este intento no aporta evidencia suficiente para declarar una competencia más débil."}</p>
+            </div>
+          </div>
+        </div>
+
+        <aside className="payment-card preview-access-card" aria-labelledby="preview-title">
+          <div className="payment-card-heading">
+            <span>Acceso de demostración</span>
+            <strong id="preview-title">Vista previa gratuita</strong>
+            <p>No se solicita pago, billetera ni datos financieros.</p>
+          </div>
+
+          <fieldset className="preview-track-options">
+            <legend>Selecciona una competencia</legend>
+            <button type="button" className={selectedTrack === "math" ? "selected" : ""} aria-pressed={selectedTrack === "math"} onClick={() => setSelectedTrack("math")}>
+              <span>∑</span><div><strong>Razonamiento lógico</strong><small>8 módulos</small></div>
+            </button>
+            <button type="button" className={selectedTrack === "reading" ? "selected" : ""} aria-pressed={selectedTrack === "reading"} onClick={() => setSelectedTrack("reading")}>
+              <span>Aa</span><div><strong>Comprensión lectora</strong><small>9 módulos</small></div>
+            </button>
+          </fieldset>
+
+          <div className="demo-payment-notice">
+            <strong>Sin proceso de cobro</strong>
+            <p>La futura pasarela se habilitará únicamente cuando existan precio, proveedor, términos y estados de pago completos.</p>
+          </div>
+
+          <button className="payment-continue" type="button" onClick={() => onContinue("start", selectedTrack)}>
+            {selectedTrack === recommendedTrack ? "Empezar la ruta recomendada" : "Empezar esta ruta"} <span aria-hidden="true">→</span>
+          </button>
+          {hasSavedProgress && (
+            <button className="continue-saved-course" type="button" onClick={() => onContinue("resume", savedTrack)}>
+              Continuar donde iba
+            </button>
+          )}
+        </aside>
+      </section>
+    </main>
+  );
+}

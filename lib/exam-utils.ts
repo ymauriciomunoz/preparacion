@@ -12,17 +12,20 @@ export function formatClock(totalSeconds: number): string {
 
 export function getScore(questions: Question[], answers: Record<string, number>) {
   const correct = questions.filter((question) => answers[question.id] === question.correctOption).length;
-  const byCompetency = questions.reduce<Record<Competency, { correct: number; total: number }>>(
+  const byCompetency = questions.reduce<Record<Competency, { correct: number; answered: number; total: number }>>(
     (result, question) => {
       result[question.competency].total += 1;
+      if (answers[question.id] !== undefined) {
+        result[question.competency].answered += 1;
+      }
       if (answers[question.id] === question.correctOption) {
         result[question.competency].correct += 1;
       }
       return result;
     },
     {
-      "Razonamiento lógico": { correct: 0, total: 0 },
-      "Comprensión lectora": { correct: 0, total: 0 },
+      "Razonamiento lógico": { correct: 0, answered: 0, total: 0 },
+      "Comprensión lectora": { correct: 0, answered: 0, total: 0 },
     },
   );
 

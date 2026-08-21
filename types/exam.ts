@@ -41,6 +41,7 @@ export interface PersistedExam {
   startedAt: number;
   currentIndex: number;
   questionIds: string[];
+  optionOrders: Record<string, number[]>;
   answers: Record<string, number>;
   marked: string[];
 }
