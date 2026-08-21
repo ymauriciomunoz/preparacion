@@ -2,7 +2,7 @@
 
 Simulador web para practicar la prueba de admisión de la Universidad de Antioquia. Cada intento incluye 40 preguntas de razonamiento lógico y 40 de comprensión lectora, seleccionadas de un banco de 160 preguntas, además de recursos gráficos, guardado local y dos modalidades de tiempo.
 
-Al finalizar, el estudiante recibe una invitación a una vista previa educativa con 17 módulos originales —8 de razonamiento lógico y 9 de comprensión lectora—, ejemplos guiados, errores frecuentes y 34 retos interactivos. No existe una pasarela activa: la aplicación no solicita pagos, billeteras ni datos financieros.
+Al finalizar, el estudiante recibe una invitación a una vista previa educativa con 17 módulos originales —8 de razonamiento lógico y 9 de comprensión lectora—, ejemplos guiados, errores frecuentes y 34 retos interactivos. La ruta `/pago` muestra una maqueta explícita de los medios futuros, pero no solicita pagos, billeteras ni datos financieros y permite avanzar sin pagar.
 
 ## Modalidades
 

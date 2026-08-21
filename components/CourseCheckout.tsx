@@ -80,13 +80,35 @@ export function CourseCheckout({
             </button>
           </fieldset>
 
+          <fieldset className="payment-options demo-methods">
+            <legend>Opciones de pago — demostración visual</legend>
+            <label className="payment-option selected">
+              <input type="radio" name="payment" defaultChecked />
+              <span className="payment-icon crypto" aria-hidden="true">₿</span>
+              <span><strong>Cripto</strong><small>Opción prevista con Binance</small></span>
+              <i aria-hidden="true">✓</i>
+            </label>
+            <label className="payment-option disabled" aria-disabled="true">
+              <input type="radio" name="payment" disabled />
+              <span className="payment-icon" aria-hidden="true">P</span>
+              <span><strong>PSE</strong><small>Próximamente</small></span>
+              <b>NO DISPONIBLE</b>
+            </label>
+            <label className="payment-option disabled" aria-disabled="true">
+              <input type="radio" name="payment" disabled />
+              <span className="payment-icon" aria-hidden="true">▰</span>
+              <span><strong>Tarjeta de crédito</strong><small>Próximamente</small></span>
+              <b>NO DISPONIBLE</b>
+            </label>
+          </fieldset>
+
           <div className="demo-payment-notice">
             <strong>Sin proceso de cobro</strong>
-            <p>La futura pasarela se habilitará únicamente cuando existan precio, proveedor, términos y estados de pago completos.</p>
+            <p>Esta pantalla no crea órdenes, no solicita billeteras y no realiza transferencias. Las opciones anteriores son únicamente una maqueta.</p>
           </div>
 
           <button className="payment-continue" type="button" onClick={() => onContinue("start", selectedTrack)}>
-            {selectedTrack === recommendedTrack ? "Empezar la ruta recomendada" : "Empezar esta ruta"} <span aria-hidden="true">→</span>
+            Avanzar sin pagar al curso <span aria-hidden="true">→</span>
           </button>
           {hasSavedProgress && (
             <button className="continue-saved-course" type="button" onClick={() => onContinue("resume", savedTrack)}>

@@ -363,7 +363,10 @@ export function ExamApp() {
         <a className="brand" href="#inicio" aria-label="Entrena UdeA, inicio">
           <span className="brand-mark" aria-hidden="true">U</span><span>Entrena UdeA</span>
         </a>
-        <span className="topbar-note">Simulador de práctica · Medellín</span>
+        <div className="topbar-actions">
+          <span className="topbar-note">Simulador de práctica · Medellín</span>
+          <a className="topbar-course-link" href="/pago">Ver acceso al curso</a>
+        </div>
       </header>
 
       <section className="hero" id="inicio">
